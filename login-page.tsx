@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [welcomeEmail, setWelcomeEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,7 +29,6 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      // Read as text first to guard against non-JSON responses
       const raw = await response.text();
       let result: any;
       try {
@@ -57,6 +57,10 @@ export default function LoginPage() {
     }
   };
 
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
+  };
+
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -74,81 +78,117 @@ export default function LoginPage() {
     );
   }
 
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Credit Card Collection</CardTitle>
-          <CardDescription>Enter your email address to sign in to your account</CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-2 flex items-center text-sm text-gray-500"
-                  tabIndex={-1}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+  // --- Forgot Password Styling Section ---
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <div className="mb-4">
+                <img src="/assets/logos/unis-logo.svg" alt="UNIS Logo" className="mx-auto h-16 w-auto" />
               </div>
-
-              <div className="text-right mt-1">
-                <button
-                  type="button"
-                  className="text-sm text-blue-600 hover:underline"
-                  onClick={() => (window.location.href = "/forgot-password-form")}
-                >
-                  Forgot Password?
-                </button>
-              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Bill Management System</h1>
             </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading || !email || !password}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-gray-500">
-            If you cannot access, please contact your administrator for help.
+            <ForgotPasswordForm onBack={handleBackToLogin} />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Default Login Page ---
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="mb-4">
+              <img src="/assets/logos/unis-logo.svg" alt="UNIS Logo" className="mx-auto h-16 w-auto" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Bill Management System</h1>
+          </div>
+
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center text-cyan-500">Sign In</CardTitle>
+              <CardDescription className="text-center text-gray-500">
+                Enter your email and password to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-2 flex items-center text-sm text-gray-500"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                  disabled={isLoading || !email || !password}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              <div className="mt-6 text-center text-sm text-gray-500">
+                If you cannot access, please contact your administrator for help.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
