@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email,
-        password: newPassword,
         action: "reset"
       }),
     })
