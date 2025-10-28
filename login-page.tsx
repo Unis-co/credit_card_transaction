@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { ForgotPasswordForm } from "@/components/forgot-password-form";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -124,7 +125,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   className="text-sm text-blue-600 hover:underline"
-                  onClick={() => (window.location.href = "/forgot-password")}
+                  onClick={() => (window.location.href = "/forgot-password-form")}
                 >
                   Forgot Password?
                 </button>
