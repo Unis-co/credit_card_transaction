@@ -1,88 +1,135 @@
-"use client"
+"use client";
 
-import { useState, FormEvent } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Loader2, Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react"
+import { useState, useEffect, FormEvent, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  ArrowLeft,
+} from "lucide-react";
 
-export default function ResetPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [showNew, setShowNew] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
-  const [errorMessage, setErrorMessage] = useState("")
+function ResetPasswordInner() {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [token, setToken] = useState("");
 
-  // simple strength calc
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // get token from query string
+  useEffect(() => {
+    const tokenParam = searchParams.get("token");
+    if (tokenParam) {
+      setToken(tokenParam);
+    } else {
+      setErrorMessage("Invalid or missing reset token.");
+    }
+  }, [searchParams]);
+
+  // simple password strength meter
   const strength = (() => {
-    let s = 0
-    if (newPassword.length >= 8) s++
-    if (/[A-Z]/.test(newPassword)) s++
-    if (/[a-z]/.test(newPassword)) s++
-    if (/\d/.test(newPassword)) s++
-    if (/[^A-Za-z0-9]/.test(newPassword)) s++
-    return Math.min(s, 5)
-  })()
+    let s = 0;
+    if (newPassword.length >= 8) s++;
+    if (/[A-Z]/.test(newPassword)) s++;
+    if (/[a-z]/.test(newPassword)) s++;
+    if (/\d/.test(newPassword)) s++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) s++;
+    return Math.min(s, 5);
+  })();
 
-  const passwordsMatch = newPassword === confirmPassword || confirmPassword.length === 0
+  const passwordsMatch =
+    newPassword === confirmPassword || confirmPassword.length === 0;
 
   const handleReset = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setSuccessMessage("")
-    setErrorMessage("")
+    e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
 
-    if (!email || !newPassword || !confirmPassword) {
-      setErrorMessage("Please fill in all fields.")
-      return
+    if (!newPassword || !confirmPassword) {
+      setErrorMessage("Please fill in all fields.");
+      return;
     }
     if (!passwordsMatch) {
-      setErrorMessage("Passwords do not match.")
-      return
+      setErrorMessage("Passwords do not match.");
+      return;
     }
     if (strength < 3) {
-      setErrorMessage("Please choose a stronger password (min 8 characters with a mix of types).")
-      return
+      setErrorMessage(
+        "Please choose a stronger password (min 8 characters with a mix of types)."
+      );
+      return;
+    }
+    if (!token) {
+      setErrorMessage("Missing or invalid reset token.");
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/reset-password", {
+      const response = await fetch("/api/webhook/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, newPassword }),
-      })
-      const result = await response.json()
+        body: JSON.stringify({ token, newPassword }),
+      });
+
+      const result = await response.json();
 
       if (!result?.success) {
-        setErrorMessage(result?.message || "Password reset failed.")
+        setErrorMessage(result?.error || "Password reset failed.");
       } else {
-        setSuccessMessage("Password reset successful. You can now log in with your new password.")
-        setTimeout(() => (window.location.href = "/login"), 1500)
+        setSuccessMessage(
+          "Password reset successful. You can now log in with your new password."
+        );
+        setTimeout(() => router.push("/login"), 2000);
       }
     } catch (err) {
-      console.error(err)
-      setErrorMessage("Something went wrong. Please try again.")
+      console.error(err);
+      setErrorMessage("Something went wrong. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const strengthColor =
-    strength >= 4 ? "bg-emerald-500" : strength === 3 ? "bg-amber-500" : "bg-rose-500"
+    strength >= 4
+      ? "bg-emerald-500"
+      : strength === 3
+      ? "bg-amber-500"
+      : "bg-rose-500";
   const strengthLabel =
-    strength >= 4 ? "Strong" : strength === 3 ? "Okay" : strength > 0 ? "Weak" : "—"
+    strength >= 4
+      ? "Strong"
+      : strength === 3
+      ? "Okay"
+      : strength > 0
+      ? "Weak"
+      : "—";
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-50 via-white to-white flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-lg border border-gray-100">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <Lock className="h-5 w-5 text-cyan-500" />
+            <CardTitle className="text-2xl text-cyan-600">
+              Reset Password
+            </CardTitle>
+          </div>
           <p className="text-sm text-muted-foreground">
-            Enter your email and choose a new password to regain access.
+            Enter and confirm your new password below.
           </p>
         </CardHeader>
 
@@ -102,19 +149,7 @@ export default function ResetPasswordPage() {
           )}
 
           <form onSubmit={handleReset} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-10"
-              />
-            </div>
-
+            {/* new password */}
             <div className="space-y-1.5">
               <Label htmlFor="newPassword">New Password</Label>
               <div className="relative">
@@ -133,7 +168,11 @@ export default function ResetPasswordPage() {
                   className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
                   aria-label={showNew ? "Hide password" : "Show password"}
                 >
-                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showNew ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 
@@ -152,6 +191,7 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
+            {/* confirm password */}
             <div className="space-y-1.5">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
               <div className="relative">
@@ -161,7 +201,11 @@ export default function ResetPasswordPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className={`pr-10 h-10 ${confirmPassword && !passwordsMatch ? "border-rose-400 focus-visible:ring-rose-400" : ""}`}
+                  className={`pr-10 h-10 ${
+                    confirmPassword && !passwordsMatch
+                      ? "border-rose-400 focus-visible:ring-rose-400"
+                      : ""
+                  }`}
                 />
                 <button
                   type="button"
@@ -169,7 +213,11 @@ export default function ResetPasswordPage() {
                   className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
                   aria-label={showConfirm ? "Hide password" : "Show password"}
                 >
-                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showConfirm ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
               {!passwordsMatch && confirmPassword.length > 0 && (
@@ -177,7 +225,12 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full h-10" disabled={isLoading}>
+            {/* submit */}
+            <Button
+              type="submit"
+              className="w-full h-10 bg-cyan-500 hover:bg-cyan-600 text-white"
+              disabled={isLoading || !token}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -189,16 +242,27 @@ export default function ResetPasswordPage() {
             </Button>
 
             <div className="text-center">
-              <a
-                href="/login"
-                className="text-sm text-primary hover:underline"
-              >
-                Back to login
+              <a href="/login" className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1">
+                <ArrowLeft className="h-4 w-4" /> Back to login
               </a>
             </div>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+        </div>
+      }
+    >
+      <ResetPasswordInner />
+    </Suspense>
+  );
 }
