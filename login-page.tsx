@@ -20,18 +20,20 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) return;
-
+  
     setIsLoading(true);
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-        action: "login", 
-      }),
-    });
-    
+  
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          action: "login",
+        }),
+      });
+  
       const raw = await response.text();
       let result: any;
       try {
@@ -39,16 +41,16 @@ export default function LoginPage() {
       } catch {
         result = { success: false, message: raw || "Invalid response" };
       }
-
+  
       if (!response.ok || !result?.success) {
         alert(result?.message || `Login failed (${response.status})`);
         return;
       }
-
+  
       localStorage.setItem("user_email", email);
       setWelcomeEmail(email);
       setIsSuccess(true);
-
+  
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 2000);
@@ -58,7 +60,7 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   const handleBackToLogin = () => {
     setShowForgotPassword(false);
