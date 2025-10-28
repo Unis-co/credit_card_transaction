@@ -26,13 +26,16 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/webhook/login", {
+      const response = await fetch("https://ailinker.item.com/webhook/login-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
-      })
+        body: JSON.stringify({
+          email,
+          action: "reset", 
+        }),
+      });
 
       const result = await response.json()
 
