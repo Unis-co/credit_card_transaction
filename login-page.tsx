@@ -73,7 +73,7 @@ export default function LoginPage() {
     );
   }
 
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -124,7 +124,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   className="text-sm text-blue-600 hover:underline"
-                  onClick={() => (window.location.href = "/forget-password-form")}
+                  onClick={() => (window.location.href = "/forgot-password-form")}
                 >
                   Forgot Password?
                 </button>
