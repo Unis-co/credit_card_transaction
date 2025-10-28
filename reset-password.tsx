@@ -29,7 +29,7 @@ function ResetPasswordInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // get token from query string
+  // Get token from URL query string
   useEffect(() => {
     const tokenParam = searchParams.get("token");
     if (tokenParam) {
@@ -39,7 +39,7 @@ function ResetPasswordInner() {
     }
   }, [searchParams]);
 
-  // simple password strength meter
+  // Simple password strength logic
   const strength = (() => {
     let s = 0;
     if (newPassword.length >= 8) s++;
@@ -79,6 +79,7 @@ function ResetPasswordInner() {
 
     setIsLoading(true);
     try {
+      // 👇 Send both newPassword and token to your Next.js API route
       const response = await fetch("/api/webhook/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,7 +89,7 @@ function ResetPasswordInner() {
       const result = await response.json();
 
       if (!result?.success) {
-        setErrorMessage(result?.error || "Password reset failed.");
+        setErrorMessage(result?.message || "Password reset failed.");
       } else {
         setSuccessMessage(
           "Password reset successful. You can now log in with your new password."
@@ -242,7 +243,10 @@ function ResetPasswordInner() {
             </Button>
 
             <div className="text-center">
-              <a href="/login" className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1">
+              <a
+                href="/login"
+                className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1"
+              >
                 <ArrowLeft className="h-4 w-4" /> Back to login
               </a>
             </div>

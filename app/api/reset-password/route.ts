@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, newPassword } = await req.json()
+    const { email, newPassword, token } = await req.json();
 
     const resp = await fetch("https://ailinker.item.com/webhook/login-user", {
       method: "POST",
@@ -10,20 +10,33 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         email,
         password: newPassword,
-        action: "reset"
+        action: "reset",
+        token,
       }),
-    })
+    });
 
-    const result = await resp.json()
+    const result = await resp.json();
 
     if (!result.success) {
-      return NextResponse.json({ success: false, message: result.message || "Reset failed" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: result.message || "Reset failed" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ success: true }, { status: 200 })
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Password reset successful",
+        data: result,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
-    console.error("Reset API error:", error)
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 })
+    console.error("Reset API error:", error);
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
   }
 }

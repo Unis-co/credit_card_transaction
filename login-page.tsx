@@ -22,13 +22,16 @@ export default function LoginPage() {
     if (!email || !password) return;
 
     setIsLoading(true);
-    try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        action: "login", 
+      }),
+    });
+    
       const raw = await response.text();
       let result: any;
       try {
