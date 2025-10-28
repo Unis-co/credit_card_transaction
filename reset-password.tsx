@@ -79,8 +79,7 @@ function ResetPasswordInner() {
 
     setIsLoading(true);
     try {
-      // 👇 Send both newPassword and token to your Next.js API route
-      const response = await fetch("/api/webhook/reset-password", {
+      const response = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword }),
