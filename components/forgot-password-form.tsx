@@ -26,7 +26,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/webhook/forgot-password", {
+      const response = await fetch("/api/webhook/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
