@@ -31,10 +31,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          action: "reset", 
-        }),
+        body: JSON.stringify({email}),
       });
 
       const result = await response.json()
