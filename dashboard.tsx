@@ -19,6 +19,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, CreditCard, Edit, Filter, Search, Clock, File, X, Save, Send, Eye } from "lucide-react"
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+
 
 interface UploadedFile {
   name: string
@@ -240,34 +243,69 @@ export default function Dashboard() {
 
   const handleExportExcel = async () => {
     try {
-      const fileName = nameFilter === "all" ? "all_cards.xlsx" : `${nameFilter}.xlsx`;
-
-      const res = await fetch("/api/export-transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ card: nameFilter }),
+      const fileName =
+        nameFilter === "all" ? "all_cards.xlsx" : `${nameFilter}.xlsx`;
+  
+      // 🧩 Create workbook & worksheet
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet(
+        nameFilter === "all" ? "All_Transactions" : nameFilter || "Transactions"
+      );
+  
+      // 🧩 Define columns (same as your backend)
+      sheet.columns = [
+        { header: "Posted_Date", key: "posted_date", width: 15 },
+        { header: "Receipt_Number", key: "receipt_no", width: 20 },
+        { header: "With_Receipt", key: "with_receipt", width: 12 },
+        { header: "Card_No", key: "card_no", width: 18 },
+        { header: "Description", key: "description", width: 30 },
+        { header: "Category", key: "category", width: 15 },
+        { header: "Amount", key: "amount", width: 12 },
+        { header: "Company", key: "company", width: 15 },
+        { header: "Location", key: "location", width: 20 },
+        { header: "Department", key: "department", width: 20 },
+        { header: "Expense_Category", key: "expense_category", width: 20 },
+        { header: "Expense_Description", key: "expense_description", width: 40 },
+        { header: "Traveler", key: "traveler", width: 20 },
+        { header: "Status", key: "status", width: 15 },
+        { header: "Upload_Receipt", key: "upload_receipt", width: 40 },
+        { header: "Last_Update_By", key: "modifiedBy", width: 25 },
+        { header: "Last_Update_Time", key: "lastModified", width: 25 },
+      ];
+  
+      // 🧩 Add your filtered transactions as rows
+      filteredTransactions.forEach((t) => {
+        sheet.addRow({
+          posted_date: t.posted_date || "",
+          receipt_no: t.receipt_no || "",
+          with_receipt: t.with_receipt ? "Yes" : "No",
+          card_no: t.card_no || "",
+          description: t.description || "",
+          category: t.category || "",
+          amount: t.amount || "",
+          company: t.company || "",
+          location: t.location || "",
+          department: t.department || "",
+          expense_category: t.expense_category || "",
+          expense_description: t.expense_description || "",
+          traveler: t.traveler || "",
+          status: t.status || "",
+          upload_receipt: Array.isArray(t.upload_receipt)
+            ? t.upload_receipt.join(", ")
+            : t.upload_receipt || "",
+          modifiedBy: t.modifiedBy || "",
+          lastModified: t.lastModified || "",
+        });
       });
-
-      const contentType = res.headers.get("Content-Type") || "";
-
-      // If backend returned an error (JSON), handle gracefully
-      if (!res.ok || contentType.includes("application/json")) {
-        const errorText = await res.text();
-        console.error("Export failed:", errorText);
-        alert("Export failed. Please try again later.");
-        return;
-      }
-
-      // Success: download Excel blob
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+  
+      sheet.getRow(1).font = { bold: true };
+  
+      // 🧩 Generate & download Excel
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, fileName);
     } catch (err) {
       console.error("Export failed:", err);
       alert("Export failed. Please try again.");
