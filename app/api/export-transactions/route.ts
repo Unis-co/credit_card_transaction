@@ -10,18 +10,8 @@ export async function POST(req: Request) {
 
     // If exporting "all", create one sheet per card
     if (card === "all") {
-      // Group by card name
-      const grouped = data.reduce((acc: Record<string, any[]>, row: any) => {
-        const key = row.name || "Unknown";
-        acc[key] = acc[key] || [];
-        acc[key].push(row);
-        return acc;
-      }, {});
-
-      Object.entries(grouped).forEach(([cardName, rows]) => {
-        const sheet = workbook.addWorksheet(cardName.slice(0, 31)); // Excel sheet name limit = 31 chars
-        addColumnsAndData(sheet, rows as any[]);
-      });
+      const sheet = workbook.addWorksheet("All_Transactions");
+      addColumnsAndData(sheet, data); // just add all rows into one sheet
     } else {
       const sheet = workbook.addWorksheet(card || "Transactions");
       addColumnsAndData(sheet, data);
