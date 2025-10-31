@@ -20,8 +20,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, CreditCard, Edit, Filter, Search, Clock, File, X, Save, Send, Eye } from "lucide-react"
 import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
-
 
 interface UploadedFile {
   name: string
@@ -246,13 +244,13 @@ export default function Dashboard() {
       const fileName =
         nameFilter === "all" ? "all_cards.xlsx" : `${nameFilter}.xlsx`;
   
-      // 🧩 Create workbook & worksheet
+      // 🧩 Create workbook & sheet
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet(
         nameFilter === "all" ? "All_Transactions" : nameFilter || "Transactions"
       );
   
-      // 🧩 Define columns (same as your backend)
+      // 🧩 Define columns
       sheet.columns = [
         { header: "Posted_Date", key: "posted_date", width: 15 },
         { header: "Receipt_Number", key: "receipt_no", width: 20 },
@@ -273,8 +271,8 @@ export default function Dashboard() {
         { header: "Last_Update_Time", key: "lastModified", width: 25 },
       ];
   
-      // 🧩 Add your filtered transactions as rows
-      filteredTransactions.forEach((t) => {
+      // 🧩 Add rows
+      (filteredTransactions || []).forEach((t) => {
         sheet.addRow({
           posted_date: t.posted_date || "",
           receipt_no: t.receipt_no || "",
@@ -300,18 +298,25 @@ export default function Dashboard() {
   
       sheet.getRow(1).font = { bold: true };
   
-      // 🧩 Generate & download Excel
+      // 🧩 Generate Excel and trigger download (no file-saver)
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(blob, fileName);
+      const url = window.URL.createObjectURL(blob);
+  
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed:", err);
       alert("Export failed. Please try again.");
     }
   };
-
 
   const cardNames = useMemo(() => sortUnique(originalTransactions.map((t) => t.name)), [originalTransactions])
   const { toast } = useToast()
