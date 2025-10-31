@@ -245,10 +245,7 @@ export default function Dashboard() {
       const res = await fetch("/api/export-transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          card: nameFilter,
-          data: filteredTransactions,
-        }),
+        body: JSON.stringify({ card: nameFilter }),
       });
 
       const contentType = res.headers.get("Content-Type") || "";
