@@ -1,21 +1,33 @@
 // app/api/export-transactions/route.ts
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma"; // ✅ adjust path to your Prisma client
+
+export const runtime = "nodejs"; // ✅ ensures full serverless runtime on Vercel
 
 export async function POST(req: Request) {
   try {
-    const { card, data } = await req.json();
+    // ✅ Only get "card" from request
+    const { card } = await req.json();
 
     const workbook = new ExcelJS.Workbook();
 
-    // If exporting "all", create one sheet per card
+    // ✅ Fetch your data directly from DB
+    let data: any[] = [];
+
     if (card === "all") {
-      const sheet = workbook.addWorksheet("All_Transactions");
-      addColumnsAndData(sheet, data); // just add all rows into one sheet
+      // Get all transactions for export
+      data = await prisma.transactions.findMany();
     } else {
-      const sheet = workbook.addWorksheet(card || "Transactions");
-      addColumnsAndData(sheet, data);
+      // Get only the selected card’s transactions
+      data = await prisma.transactions.findMany({
+        where: { card_no: card },
+      });
     }
+
+    // ✅ Now safely generate Excel
+    const sheet = workbook.addWorksheet("All_Transactions");
+    addColumnsAndData(sheet, data);
 
     const buffer = await workbook.xlsx.writeBuffer();
 
