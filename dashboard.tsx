@@ -1013,6 +1013,7 @@ export default function Dashboard() {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="submitted">Submitted</SelectItem>
                     <SelectItem value="underviewing">Underviewing</SelectItem>
+                    <SelectItem value="clear">Clear</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
