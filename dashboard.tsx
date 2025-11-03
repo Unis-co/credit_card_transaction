@@ -867,7 +867,7 @@ export default function Dashboard() {
     const underviewing = filteredTransactions.filter(
       (t) => (t.status || "pending").toLowerCase() === "underviewing",
     ).length
-    return { total, with_receipts, totalAmount, pending, submitted, underviewing }
+    return { total, with_receipts, totalAmount, pending, submitted, underviewing, clear }
   }
 
   const stats = getStats()
@@ -966,6 +966,18 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold">{stats.underviewing}</p>
                 </div>
                 <Eye className="h-8 w-8 text-indigo-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Clear</p>
+                  <p className="text-2xl font-bold">{stats.clear}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
