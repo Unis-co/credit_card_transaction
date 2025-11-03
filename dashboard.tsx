@@ -65,6 +65,7 @@ interface Transaction {
   split_amount?: number
   hasMultipleLines?: boolean | null
   class_bnp?: string
+  if_offset?: 0 | 1
 }
 
 function dedupeByReceiptAndCard<T extends { receipt_no: string; name: string }>(items: T[]): T[] {
@@ -731,6 +732,7 @@ export default function Dashboard() {
         split_lines: editingTransaction.split_lines || [],
         split_amount: editingTransaction.split_amount ?? null,
         class_bnp: editingTransaction.class_bnp || "",
+        if_offset: editingTransaction.if_offset ?? 0,
       }
 
       const response = await fetch("/api/update-transaction", {
@@ -1846,6 +1848,35 @@ export default function Dashboard() {
                       </p>
                     </div>
                   )}
+                  <div className="col-span-2">
+                    <Label htmlFor="if-offset">If Offset</Label>
+                    <Select
+                      id="if-offset"
+                      value={String(editingTransaction?.if_offset ?? 0)}
+                      onValueChange={(value) => {
+                        const offsetValue = Number(value) as 0 | 1
+                        const newStatus = offsetValue === 1 ? "Clear" : editingTransaction.status
+                        setEditingTransaction({
+                          ...editingTransaction!,
+                          if_offset: offsetValue,
+                          status: newStatus as "pending" | "submitted" | "underviewing" | "Clear",
+                        })
+                      }}
+                      disabled={editingTransaction?.status === "underviewing"}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select offset status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Yes</SelectItem>
+                        <SelectItem value="0">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select “Yes” if this transaction is cleared/offset. The status will automatically change to “Clear”.
+                    </p>
+                  </div>
                 </div>
 
                 <DialogFooter>
