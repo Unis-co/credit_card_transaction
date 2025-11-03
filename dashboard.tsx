@@ -511,6 +511,7 @@ export default function Dashboard() {
       pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
       submitted: { color: "bg-green-100 text-green-800", icon: Send },
       underviewing: { color: "bg-indigo-100 text-indigo-800", icon: Eye },
+      clear: { color: "bg-blue-100 text-blue-800", icon: CheckCircle },
     }
 
     const normalizedStatus = (status || "pending").toLowerCase()
@@ -866,6 +867,9 @@ export default function Dashboard() {
     const submitted = filteredTransactions.filter((t) => (t.status || "pending").toLowerCase() === "submitted").length
     const underviewing = filteredTransactions.filter(
       (t) => (t.status || "pending").toLowerCase() === "underviewing",
+    ).length
+    const clear = filteredTransactions.filter(
+      (t) => (t.status || "pending").toLowerCase() === "clear"
     ).length
     return { total, with_receipts, totalAmount, pending, submitted, underviewing, clear }
   }
@@ -1868,7 +1872,7 @@ export default function Dashboard() {
                       value={String(editingTransaction?.if_offset ?? 0)}
                       onValueChange={(value) => {
                         const offsetValue = Number(value) as 0 | 1
-                        const newStatus = offsetValue === 1 ? "Clear" : editingTransaction.status
+                        const newStatus = offsetValue === 1 ? "clear" : editingTransaction.status
                         setEditingTransaction({
                           ...editingTransaction!,
                           if_offset: offsetValue,
