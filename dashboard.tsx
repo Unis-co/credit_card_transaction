@@ -231,7 +231,8 @@ export default function Dashboard() {
     "kevin.chen@unisco.com",
     "cathymae.anonuevo@unisco.com",
     "jason.chang@unisco.com",
-    "joyce.pamalandong@unisco.com"
+    "joyce.pamalandong@unisco.com",
+    "jennifer.wang-hsu@unisco.com"
   ]
 
   const isAPUser = apUsers.includes(userEmail.toLowerCase())
