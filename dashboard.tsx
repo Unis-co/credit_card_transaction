@@ -671,32 +671,38 @@ export default function Dashboard() {
       }
     }
 
-    const shouldSubmit =
-      (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0) ||
-      editingTransaction.ap_approved === 1
-    
     let optimisticStatus: "pending" | "submitted" | "underviewing" | "clear" = "pending"
 
     if (editingTransaction.if_offset === 1) {
       optimisticStatus = "clear"
-    } else if (shouldSubmit) {
+    } else if (
+      (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0) ||
+      editingTransaction.ap_approved === 1
+    ) {
       optimisticStatus = "submitted"
     }
     
     const optimisticTransaction = { ...editingTransaction, status: optimisticStatus }
-
-
+    
     setEditingTransaction(optimisticTransaction)
     setTransactions((prev) => prev.map((t) => (t.id === optimisticTransaction.id ? optimisticTransaction : t)))
     setFilteredTransactions((prev) => prev.map((t) => (t.id === optimisticTransaction.id ? optimisticTransaction : t)))
-
+    
     toast({
-      title: shouldSubmit ? "Submitted (Pending Sync)" : "Saved locally",
-      description: shouldSubmit
-        ? "Your transaction was marked as submitted. Syncing with the server..."
-        : "Changes saved. Waiting for receipts or AP approval.",
+      title:
+        optimisticStatus === "clear"
+          ? "Transaction marked as Cleared"
+          : optimisticStatus === "submitted"
+          ? "Submitted (Pending Sync)"
+          : "Saved locally",
+      description:
+        optimisticStatus === "clear"
+          ? "This transaction has been marked as cleared/offset."
+          : optimisticStatus === "submitted"
+          ? "Your transaction was marked as submitted. Syncing with the server..."
+          : "Changes saved. Waiting for receipts or AP approval.",
     })
-
+    
     setIsSaving(editingTransaction.id)
     savedPageRef.current = currentPage
 
