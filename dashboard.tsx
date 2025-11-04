@@ -54,7 +54,7 @@ interface Transaction {
   expense_category: string
   expense_description: string
   traveler: string
-  status: "pending" | "submitted" | "underviewing"
+  status: "pending" | "submitted" | "underviewing" | "clear"
   uploadedFiles?: UploadedFile[]
   upload_receipt?: string[]
   table_name: string
@@ -1907,7 +1907,7 @@ export default function Dashboard() {
                         setEditingTransaction({
                           ...editingTransaction!,
                           if_offset: offsetValue,
-                          status: newStatus as "pending" | "submitted" | "underviewing" | "Clear",
+                          status: newStatus as "pending" | "submitted" | "underviewing" | "clear",
                         })
                       }}
                       disabled={editingTransaction?.status === "underviewing"}
