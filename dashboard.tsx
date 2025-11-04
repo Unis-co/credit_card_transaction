@@ -673,7 +673,17 @@ export default function Dashboard() {
     const shouldSubmit =
       (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0) ||
       editingTransaction.ap_approved === 1
-    const optimisticTransaction = { ...editingTransaction, status: shouldSubmit ? "submitted" : "pending" }
+    
+    let optimisticStatus: "pending" | "submitted" | "underviewing" | "clear" = "pending"
+
+    if (editingTransaction.if_offset === 1) {
+      optimisticStatus = "clear"
+    } else if (shouldSubmit) {
+      optimisticStatus = "submitted"
+    }
+    
+    const optimisticTransaction = { ...editingTransaction, status: optimisticStatus }
+
 
     setEditingTransaction(optimisticTransaction)
     setTransactions((prev) => prev.map((t) => (t.id === optimisticTransaction.id ? optimisticTransaction : t)))
@@ -755,7 +765,16 @@ export default function Dashboard() {
         const hasReceipts =
           (filesData && filesData.length > 0) ||
           (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0)
-        const newStatus = editingTransaction.ap_approved === 1 ? "submitted" : hasReceipts ? "submitted" : "pending"
+        
+        let newStatus: "pending" | "submitted" | "underviewing" | "clear" = "pending"
+
+        if (editingTransaction.if_offset === 1) {
+          newStatus = "clear"
+        } else if (editingTransaction.ap_approved === 1) {
+          newStatus = "submitted"
+        } else if (hasReceipts) {
+          newStatus = "submitted"
+        }
 
         const updatedTransaction = {
           ...editingTransaction,
