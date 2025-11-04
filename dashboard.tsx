@@ -802,7 +802,7 @@ export default function Dashboard() {
               : editingTransaction.uploadedFiles || [],
           upload_receipt: filesData.map((f) => f.url),
           with_receipt: filesData.length > 0 || (editingTransaction.uploadedFiles?.length ?? 0) > 0,
-          status: newStatus as "submitted" | "pending" | "underviewing",
+          status: newStatus as "submitted" | "pending" | "underviewing" | "clear",
         }
 
         const updatedList = transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
