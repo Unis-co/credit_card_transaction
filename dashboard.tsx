@@ -167,6 +167,10 @@ export default function Dashboard() {
   const [receiptFilter, setReceiptFilter] = useState("")
   const [nameFilter, setNameFilter] = useState("all")
   const [cardHolderFilter, setCardHolderFilter] = useState("all")
+  const [withReceiptFilter, setWithReceiptFilter] = useState("all")
+  const [descriptionFilter, setDescriptionFilter] = useState("")
+  const [minAmount, setMinAmount] = useState<number | "">("")
+  const [maxAmount, setMaxAmount] = useState<number | "">("")
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -244,12 +248,12 @@ export default function Dashboard() {
   const handleExportExcel = async () => {
     try {
       const fileName =
-        nameFilter === "all" ? "all_cards.xlsx" : `${nameFilter}.xlsx`;
+        name === "all" ? "all_cards.xlsx" : `${name}.xlsx`;
   
       // 🧩 Create workbook & sheet
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet(
-        nameFilter === "all" ? "All_Transactions" : nameFilter || "Transactions"
+        name === "all" ? "All_Transactions" : name || "Transactions"
       );
   
       // 🧩 Define columns
@@ -276,7 +280,7 @@ export default function Dashboard() {
       ];
   
       // 🧩 Add rows
-      (filteredTransactions || []).forEach((t) => {
+      (edTransactions || []).forEach((t) => {
         sheet.addRow({
           posted_date: t.posted_date || "",
           receipt_no: t.receipt_no || "",
@@ -379,7 +383,7 @@ export default function Dashboard() {
         const deduped = dedupeByReceiptAndCard(transactionsWithFiles)
         setOriginalTransactions(deduped)
         setTransactions(deduped)
-        setFilteredTransactions(deduped)
+        setedTransactions(deduped)
       }
     } catch (err) {
       console.error("Error fetching transactions:", err)
@@ -427,15 +431,15 @@ export default function Dashboard() {
     if (pageGuardRef.current) return
     setCurrentPage(1)
     setPageInput("1")
-  }, [startDate, endDate, statusFilter, receiptFilter, nameFilter, cardHolderFilter])
+  }, [startDate, endDate, status, receipt, name, cardHolder])
 
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage))
+    const maxPage = Math.max(1, Math.ceil(edTransactions.length / itemsPerPage))
     if (currentPage > maxPage) {
       setCurrentPage(maxPage)
       setPageInput(String(maxPage))
     }
-  }, [filteredTransactions.length, itemsPerPage, currentPage])
+  }, [edTransactions.length, itemsPerPage, currentPage])
 
   useEffect(() => {
     const email = localStorage.getItem("user_email")
@@ -455,45 +459,73 @@ export default function Dashboard() {
   }, [isEditModalOpen])
 
   useEffect(() => {
-    if (statusFilter === "all") {
+    if (status === "all") {
       setOriginalTransactions(dedupeByReceiptAndCard([...transactions]))
     }
-  }, [statusFilter, transactions])
+  }, [status, transactions])
 
   useEffect(() => {
     let filtered = dedupeByReceiptAndCard([...originalTransactions])
-
+  
     if (startDate && endDate) {
       filtered = filtered.filter((t) => {
         const posted = new Date(t.posted_date)
         return posted >= new Date(startDate) && posted <= new Date(endDate)
       })
     }
-
+  
     if (statusFilter && statusFilter.toLowerCase() !== "all") {
       filtered = filtered.filter((t) => (t.status || "pending").toLowerCase() === statusFilter.toLowerCase())
     }
-
+  
+    if (withReceiptFilter !== "all") {
+      const wantReceipt = withReceiptFilter === "yes"
+      filtered = filtered.filter((t) => Boolean(t.with_receipt) === wantReceipt)
+    }
+  
     if (receiptFilter) {
       filtered = filtered.filter((t) => (t.receipt_no || "").toLowerCase().includes(receiptFilter.toLowerCase()))
     }
-
+  
+    if (descriptionFilter) {
+      filtered = filtered.filter((t) => (t.description || "").toLowerCase().includes(descriptionFilter.toLowerCase()))
+    }
+  
     if (nameFilter !== "all") {
       filtered = filtered.filter((t) => (t.name || "").trim().toLowerCase() === nameFilter.trim().toLowerCase())
     }
-
+  
     if (cardHolderFilter !== "all") {
       filtered = filtered.filter(
-        (t) =>
-          String(t.card_holders || "")
-            .trim()
-            .toLowerCase() === cardHolderFilter.trim().toLowerCase(),
+        (t) => String(t.card_holders || "").trim().toLowerCase() === cardHolderFilter.trim().toLowerCase()
       )
     }
-
+  
+    if (minAmount !== "" || maxAmount !== "") {
+      filtered = filtered.filter((t) => {
+        const amount = Number(t.amount)
+        const meetsMin = minAmount === "" || amount >= minAmount
+        const meetsMax = maxAmount === "" || amount <= maxAmount
+        return meetsMin && meetsMax
+      })
+    }
+  
     filtered = filtered.sort((a, b) => new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime())
     setFilteredTransactions(filtered)
-  }, [originalTransactions, startDate, endDate, statusFilter, receiptFilter, nameFilter, cardHolderFilter])
+  }, [
+    originalTransactions,
+    startDate,
+    endDate,
+    statusFilter,
+    withReceiptFilter,
+    receiptFilter,
+    descriptionFilter,
+    nameFilter,
+    cardHolderFilter,
+    minAmount,
+    maxAmount,
+  ])
+  
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount)
@@ -885,6 +917,10 @@ export default function Dashboard() {
     setReceiptFilter("")
     setNameFilter("all")
     setCardHolderFilter("all")
+    setWithReceiptFilter("all")
+    setDescriptionFilter("")
+    setMinAmount("")
+    setMaxAmount("")
   }
 
   const getStats = () => {
@@ -1111,6 +1147,54 @@ export default function Dashboard() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="with-receipt-filter">With Receipt</Label>
+                <Select value={withReceiptFilter} onValueChange={setWithReceiptFilter}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="description-filter">Description</Label>
+                <div className="relative mt-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="description-filter"
+                    placeholder="Search description..."
+                    value={descriptionFilter}
+                    onChange={(e) => setDescriptionFilter(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="amount-range">Amount Range</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={minAmount}
+                    onChange={(e) => setMinAmount(e.target.value === "" ? "" : parseFloat(e.target.value))}
+                    className="w-1/2"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={maxAmount}
+                    onChange={(e) => setMaxAmount(e.target.value === "" ? "" : parseFloat(e.target.value))}
+                    className="w-1/2"
+                  />
+                </div>
               </div>
 
               <div className="flex items-end">
