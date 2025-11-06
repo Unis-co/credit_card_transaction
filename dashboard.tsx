@@ -236,7 +236,8 @@ export default function Dashboard() {
     "cathymae.anonuevo@unisco.com",
     "jason.chang@unisco.com",
     "joyce.pamalandong@unisco.com",
-    "jennifer.wang-hsu@unisco.com"
+    "jennifer.wang-hsu@unisco.com",
+    "jvion.velasco@unisco.com"
   ]
 
   const isAPUser = apUsers.includes(userEmail.toLowerCase())
@@ -961,31 +962,40 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-6 w-6" />
-              Credit Card Transaction Dashboard
-            </CardTitle>
-            <CardDescription>
-              Logged in as: <span className="font-semibold text-blue-600">{userEmail}</span>
-              {error && <span className="ml-2 text-orange-600 text-sm">(Using demo data)</span>}
-            </CardDescription>
-            <div className="flex items-center gap-2 mt-2">
-              <Button size="sm" variant="destructive" onClick={handleLogout}>
-                Logout
-              </Button>
-              {isAPUser && (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() =>
-                    window.open("https://ailinker.item.com/form/d69462d2-f292-4b98-9ac4-fbd6ca6dee1f", "_blank")
-                  }
-                >
-                  Submit Form to inform Card Holders
+        <Card className="shadow-sm border border-gray-100 rounded-xl">
+          <CardHeader className="pb-3 pt-4 md:pt-5 md:pb-4 space-y-2">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-semibold text-gray-800">
+                  <CreditCard className="h-6 w-6 text-blue-600" />
+                  Credit Card Transaction Dashboard
+                </CardTitle>
+                <CardDescription className="mt-1 text-sm text-gray-600">
+                  Logged in as:{" "}
+                  <span className="font-medium text-blue-600">{userEmail}</span>
+                  {error && (
+                    <span className="ml-2 text-orange-600 text-xs font-medium">(Using demo data)</span>
+                  )}
+                </CardDescription>
+              </div>
+        
+              <div className="flex items-center gap-2 mt-3 md:mt-0">
+                <Button size="sm" variant="destructive" onClick={handleLogout}>
+                  Logout
                 </Button>
-              )}
+                {isAPUser && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="border border-gray-300 text-gray-700 hover:text-blue-700"
+                    onClick={() =>
+                      window.open("https://ailinker.item.com/form/d69462d2-f292-4b98-9ac4-fbd6ca6dee1f", "_blank")
+                    }
+                  >
+                    Notify Card Holders
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
         </Card>
@@ -1100,6 +1110,20 @@ export default function Dashboard() {
               </div>
 
               <div>
+                <Label htmlFor="with-receipt-filter">With Receipt</Label>
+                <Select value={withReceiptFilter} onValueChange={setWithReceiptFilter}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label htmlFor="name-filter">Card Name</Label>
                 <Select value={nameFilter} onValueChange={setNameFilter}>
                   <SelectTrigger className="mt-1">
@@ -1143,20 +1167,6 @@ export default function Dashboard() {
                         {holder}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="with-receipt-filter">With Receipt</Label>
-                <Select value={withReceiptFilter} onValueChange={setWithReceiptFilter}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
