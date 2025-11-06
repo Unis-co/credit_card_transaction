@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, CreditCard, Edit, Filter, Search, Clock, File, X, Save, Send, Eye, CheckCircle } from "lucide-react"
-import ExcelJS from "exceljs";
+
 
 interface UploadedFile {
   name: string
@@ -247,23 +247,22 @@ export default function Dashboard() {
 
   const handleExportExcel = async () => {
     try {
+      const ExcelJS = (await import("exceljs")).default; // safer dynamic import
       const fileName =
-        name === "all" ? "all_cards.xlsx" : `${name}.xlsx`;
+        nameFilter === "all" ? "all_cards.xlsx" : `${nameFilter}.xlsx`;
   
-      // 🧩 Create workbook & sheet
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet(
-        name === "all" ? "All_Transactions" : name || "Transactions"
+        nameFilter === "all" ? "All_Transactions" : nameFilter || "Transactions"
       );
   
-      // 🧩 Define columns
       sheet.columns = [
         { header: "Posted_Date", key: "posted_date", width: 15 },
         { header: "Receipt_Number", key: "receipt_no", width: 20 },
         { header: "With_Receipt", key: "with_receipt", width: 12 },
         { header: "Card_No", key: "card_no", width: 18 },
-        { header: "Card_Name", key: "name", width: 25 }, 
-        { header: "Card_Holder", key: "card_holders", width: 25 }, 
+        { header: "Card_Name", key: "name", width: 25 },
+        { header: "Card_Holder", key: "card_holders", width: 25 },
         { header: "Description", key: "description", width: 30 },
         { header: "Category", key: "category", width: 15 },
         { header: "Amount", key: "amount", width: 12 },
@@ -279,8 +278,7 @@ export default function Dashboard() {
         { header: "Last_Update_Time", key: "lastModified", width: 25 },
       ];
   
-      // 🧩 Add rows
-      (edTransactions || []).forEach((t) => {
+      (filteredTransactions || []).forEach((t) => {
         sheet.addRow({
           posted_date: t.posted_date || "",
           receipt_no: t.receipt_no || "",
@@ -308,7 +306,6 @@ export default function Dashboard() {
   
       sheet.getRow(1).font = { bold: true };
   
-      // 🧩 Generate Excel and trigger download (no file-saver)
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -327,6 +324,7 @@ export default function Dashboard() {
       alert("Export failed. Please try again.");
     }
   };
+
 
   const cardNames = useMemo(() => sortUnique(originalTransactions.map((t) => t.name)), [originalTransactions])
   const { toast } = useToast()
@@ -383,7 +381,7 @@ export default function Dashboard() {
         const deduped = dedupeByReceiptAndCard(transactionsWithFiles)
         setOriginalTransactions(deduped)
         setTransactions(deduped)
-        setedTransactions(deduped)
+        setFilteredTransactions(deduped)
       }
     } catch (err) {
       console.error("Error fetching transactions:", err)
@@ -428,18 +426,18 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    if (pageGuardRef.current) return
-    setCurrentPage(1)
-    setPageInput("1")
-  }, [startDate, endDate, status, receipt, name, cardHolder])
+    if (pageGuardRef.current) return;
+    setCurrentPage(1);
+    setPageInput("1");
+  }, [startDate, endDate, statusFilter, receiptFilter, nameFilter, cardHolderFilter, withReceiptFilter, descriptionFilter, minAmount, maxAmount]);
 
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(edTransactions.length / itemsPerPage))
+    const maxPage = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage))
     if (currentPage > maxPage) {
       setCurrentPage(maxPage)
       setPageInput(String(maxPage))
     }
-  }, [edTransactions.length, itemsPerPage, currentPage])
+  }, [filteredTransactions.length, itemsPerPage, currentPage])
 
   useEffect(() => {
     const email = localStorage.getItem("user_email")
@@ -459,10 +457,10 @@ export default function Dashboard() {
   }, [isEditModalOpen])
 
   useEffect(() => {
-    if (status === "all") {
+    if (statusFilter === "all") {
       setOriginalTransactions(dedupeByReceiptAndCard([...transactions]))
     }
-  }, [status, transactions])
+  }, [statusFilter, transactions])
 
   useEffect(() => {
     let filtered = dedupeByReceiptAndCard([...originalTransactions])
