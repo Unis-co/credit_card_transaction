@@ -160,6 +160,7 @@ export default function Dashboard() {
   const [pageInput, setPageInput] = useState<string>("")
   const savedPageRef = useRef(1)
   const pageGuardRef = useRef(false)
+  const originalIfOffsetRef = useRef<number | null>(null)
 
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
@@ -634,6 +635,7 @@ export default function Dashboard() {
       !!(transaction.company || transaction.department || transaction.location || transaction.expense_description)
     const hasMultipleLines = hasValidSplitLines ? true : hasSingleLineData ? false : null
 
+    originalIfOffsetRef.current = transaction.if_offset ?? 0
     setEditingTransaction({
       ...transaction,
       uploadedFiles: uploadedFiles,
@@ -674,7 +676,8 @@ export default function Dashboard() {
     if (!editingTransaction) return
 
     // 🧠 Skip required-field validation if AP user set "If Offset" to Yes
-    if (!(isAPUser && editingTransaction.if_offset === 1)) {
+    const isOffsetMode = isAPUser && editingTransaction.if_offset === 1
+    if (!isOffsetMode) {
       if (editingTransaction.hasMultipleLines === true) {
         const invalidLine = (editingTransaction.split_lines || []).find(
           (line) => !line.amount || !line.company || !line.location || !line.department || !line.expense_description,
