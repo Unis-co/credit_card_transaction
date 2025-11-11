@@ -673,32 +673,37 @@ export default function Dashboard() {
   const handleSaveTransaction = async () => {
     if (!editingTransaction) return
 
-    if (editingTransaction.hasMultipleLines === true) {
-      const invalidLine = (editingTransaction.split_lines || []).find(
-        (line) => !line.amount || !line.company || !line.location || !line.department || !line.expense_description,
-      )
-
-      if (invalidLine) {
-        toast({
-          title: "Required fields missing in line details",
-          description: "Each line must have Amount, Company, Location, Department, and Expense Description filled in.",
-          variant: "destructive",
-        })
-        return
-      }
-    } else {
-      if (
-        !editingTransaction.company ||
-        !editingTransaction.location ||
-        !editingTransaction.department ||
-        !editingTransaction.expense_description
-      ) {
-        toast({
-          title: "Required fields missing",
-          description: "Please fill in Company, Location, Department, and Expense Description fields.",
-          variant: "destructive",
-        })
-        return
+    // 🧠 Skip required-field validation if AP user set "If Offset" to Yes
+    if (!(isAPUser && editingTransaction.if_offset === 1)) {
+      if (editingTransaction.hasMultipleLines === true) {
+        const invalidLine = (editingTransaction.split_lines || []).find(
+          (line) => !line.amount || !line.company || !line.location || !line.department || !line.expense_description,
+        )
+    
+        if (invalidLine) {
+          toast({
+            title: "Required fields missing in line details",
+            description:
+              "Each line must have Amount, Company, Location, Department, and Expense Description filled in.",
+            variant: "destructive",
+          })
+          return
+        }
+      } else {
+        if (
+          !editingTransaction.company ||
+          !editingTransaction.location ||
+          !editingTransaction.department ||
+          !editingTransaction.expense_description
+        ) {
+          toast({
+            title: "Required fields missing",
+            description:
+              "Please fill in Company, Location, Department, and Expense Description fields.",
+            variant: "destructive",
+          })
+          return
+        }
       }
     }
 
@@ -1988,36 +1993,37 @@ export default function Dashboard() {
                       </p>
                     </div>
                   )}
-                  <div className="col-span-2">
-                    <Label htmlFor="if-offset">If Offset</Label>
-                    <Select
-                      id="if-offset"
-                      value={String(editingTransaction?.if_offset ?? 0)}
-                      onValueChange={(value) => {
-                        const offsetValue = Number(value) as 0 | 1
-                        const newStatus = offsetValue === 1 ? "clear" : editingTransaction.status
-                        setEditingTransaction({
-                          ...editingTransaction!,
-                          if_offset: offsetValue,
-                          status: newStatus as "pending" | "submitted" | "underviewing" | "clear",
-                        })
-                      }}
-                      disabled={editingTransaction?.status === "underviewing"}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select offset status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Yes</SelectItem>
-                        <SelectItem value="0">No</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  {isAPUser && (
+                    <div className="col-span-2">
+                      <Label htmlFor="if-offset">If Offset</Label>
+                      <Select
+                        id="if-offset"
+                        value={String(editingTransaction?.if_offset ?? 0)}
+                        onValueChange={(value) => {
+                          const offsetValue = Number(value) as 0 | 1
+                          const newStatus = offsetValue === 1 ? "clear" : editingTransaction.status
+                          setEditingTransaction({
+                            ...editingTransaction!,
+                            if_offset: offsetValue,
+                            status: newStatus as "pending" | "submitted" | "underviewing" | "clear",
+                          })
+                        }}
+                        disabled={editingTransaction?.status === "underviewing"}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select offset status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Yes</SelectItem>
+                          <SelectItem value="0">No</SelectItem>
+                        </SelectContent>
+                      </Select>
                   
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select “Yes” if this transaction is cleared/offset. The status will automatically change to “Clear”.
-                    </p>
-                  </div>
-                </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select “Yes” if this transaction is cleared/offset. The status will automatically change to “Clear”.
+                      </p>
+                    </div>
+                  )}
 
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
