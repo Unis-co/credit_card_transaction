@@ -710,14 +710,48 @@ export default function Dashboard() {
 
     let optimisticStatus: "pending" | "submitted" | "underviewing" | "clear" = "pending"
 
+    // ✅ Rule 1: If Offset = always "clear"
     if (editingTransaction.if_offset === 1) {
       optimisticStatus = "clear"
-    } else if (
-      (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0) ||
-      editingTransaction.ap_approved === 1
-    ) {
+    } else if (editingTransaction.ap_approved === 1) {
+      // ✅ Rule 2: AP override — mark submitted even if no receipt
       optimisticStatus = "submitted"
+    } else {
+      // ✅ Rule 3: Regular user rule — must have both receipt + required fields
+      const hasReceipt =
+        editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0
+    
+      const allRequiredFilled = (() => {
+        if (editingTransaction.hasMultipleLines === true) {
+          return (
+            Array.isArray(editingTransaction.split_lines) &&
+            editingTransaction.split_lines.length > 0 &&
+            editingTransaction.split_lines.every(
+              (line) =>
+                line.amount &&
+                line.company?.trim() &&
+                line.location?.trim() &&
+                line.department?.trim() &&
+                line.expense_description?.trim()
+            )
+          )
+        } else {
+          return (
+            editingTransaction.company?.trim() &&
+            editingTransaction.location?.trim() &&
+            editingTransaction.department?.trim() &&
+            editingTransaction.expense_description?.trim()
+          )
+        }
+      })()
+    
+      if (hasReceipt && allRequiredFilled) {
+        optimisticStatus = "submitted"
+      } else {
+        optimisticStatus = "pending"
+      }
     }
+
     
     const optimisticTransaction = { ...editingTransaction, status: optimisticStatus }
     
@@ -821,8 +855,40 @@ export default function Dashboard() {
           newStatus = "clear"
         } else if (editingTransaction.ap_approved === 1) {
           newStatus = "submitted"
-        } else if (hasReceipts) {
-          newStatus = "submitted"
+        } else {
+          const hasReceipt =
+            (filesData && filesData.length > 0) ||
+            (editingTransaction.uploadedFiles && editingTransaction.uploadedFiles.length > 0)
+        
+          const allRequiredFilled = (() => {
+            if (editingTransaction.hasMultipleLines === true) {
+              return (
+                Array.isArray(editingTransaction.split_lines) &&
+                editingTransaction.split_lines.length > 0 &&
+                editingTransaction.split_lines.every(
+                  (line) =>
+                    line.amount &&
+                    line.company?.trim() &&
+                    line.location?.trim() &&
+                    line.department?.trim() &&
+                    line.expense_description?.trim()
+                )
+              )
+            } else {
+              return (
+                editingTransaction.company?.trim() &&
+                editingTransaction.location?.trim() &&
+                editingTransaction.department?.trim() &&
+                editingTransaction.expense_description?.trim()
+              )
+            }
+          })()
+        
+          if (hasReceipt && allRequiredFilled) {
+            newStatus = "submitted"
+          } else {
+            newStatus = "pending"
+          }
         }
 
         const updatedTransaction = {
