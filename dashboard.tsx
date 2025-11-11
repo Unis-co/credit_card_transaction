@@ -2023,8 +2023,9 @@ export default function Dashboard() {
                         Select “Yes” if this transaction is cleared/offset. The status will automatically change to “Clear”.
                       </p>
                     </div>
-                  )}
-
+                  )}   {/* ✅ END If Offset block */}
+                  
+                  </div>   {/* ✅ CLOSE the grid container here */}
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                     Cancel
