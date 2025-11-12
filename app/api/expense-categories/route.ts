@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const upstream = "https://ailinker.item.com/webhook/bnp-expense-category";
+    const upstream = "https://api-relay.jason-lu.workers.dev/relay/webhook/bnp-expense-category";
 
     const resp = await fetch(upstream, {
       method: "GET",
