@@ -8,7 +8,7 @@ export async function GET() {
   try {
     // Pick the correct upstream. You’ve used both domains in your code;
     // keep ONE here. If your n8n lives at ailinker.item.com, use that:
-    const upstream = "https://ailinker.item.com/webhook/bnp-location";
+    const upstream = "https://api-relay.jason-lu.workers.dev/relay/webhook/bnp-location";
     // If it actually lives at n8n.unisfinance.nl, swap to:
     // const upstream = "https://n8n.unisfinance.nl/webhook/bnp-location";
 
