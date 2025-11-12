@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const resp = await fetch(`https://ailinker.item.com/webhook/get-user-transactions?email=${encodeURIComponent(email)}`, {
+    const resp = await fetch(`https://api-relay.jason-lu.workers.dev/relay/webhook/get-user-transactions?email=${encodeURIComponent(email)}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
