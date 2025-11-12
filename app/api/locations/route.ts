@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 // Optional: revalidate every 10 minutes
-export const revalidate = 600;
+// export const revalidate = 600;
 
 export async function GET() {
   try {
