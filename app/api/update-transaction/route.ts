@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const resp = await fetch("https://ailinker.item.com/webhook/update-transactions", {
+    const resp = await fetch("https://api-relay.jason-lu.workers.dev/relay/webhook/update-transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
