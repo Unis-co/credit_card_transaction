@@ -809,12 +809,7 @@ export default function Dashboard() {
         expense_category: editingTransaction.expense_category || "",
         expense_description: editingTransaction.expense_description || "",
         traveler: editingTransaction.traveler || "",
-        status:
-          editingTransaction.if_offset === 1
-            ? "clear"
-            : editingTransaction.ap_approved === 1
-            ? "submitted"
-            : editingTransaction.status,
+        status: optimisticStatus,
         table_name: editingTransaction.table_name || "",
         name: editingTransaction.name || "",
         uploadedFiles: filesData,
